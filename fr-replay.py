@@ -382,7 +382,7 @@ def print_results(results, verbose=True, page=1):
 	for i in range(len(results)):
 		print '%s(%d) %s'% (BOLD, i+1+VIDEO_PER_PAGE*page, results[i]['title'] + NC)
 		if verbose:
-			print '	'+ results[i]['date'] + ' ' + results[i]['time']
+			print '	1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
 			print '	'+ results[i]['desc']
 	print ':: Display page %d' % page
 	if len(results) == 0:
@@ -432,7 +432,6 @@ def record(video, options):
 	os.chdir(cwd)
 
 def make_cmd_args(video, options, streaming=False):
-	# OLD function
 	return None
 
 def expand_path(path):
