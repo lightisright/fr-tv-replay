@@ -3,10 +3,12 @@ Debug in progress, no release for now.....
 
 Search &amp; play several French Television Replay streams (Pluzz, Arte, Canal+) - Python / CLI
 
-This application will list the streams available on several French TV channels :
+This application will list & play streams available on several French TV channels :
  * Pluzz
  * Arte
  * Canal+
+
+This command-line software was written in Python as an alternative solution to avoid use of Flash Player which is not optimized for Linux-based OS.
 
 DSCLAIMER:
 
