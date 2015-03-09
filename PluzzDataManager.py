@@ -55,8 +55,10 @@ class PluzzDataManager(object):
 					if not os.path.exists(PLUZZ_CACHE_DIR+'/'+dirname):
 						os.makedirs(PLUZZ_CACHE_DIR+'/'+dirname)
 					zfile.extract(name, PLUZZ_CACHE_DIR+'/'+dirname)
-			except urllib2.URLError:
-				die("Can't get the Pluzz master ressource")
+			except OSError.URLError:
+				die("Can't get the Pluzz master ressource : wrong URL")
+			except OSError.HTTPError:
+				die("Can't get the Pluzz master ressource : HTTP error")
 				
 		# Save video server URI locally
 		
