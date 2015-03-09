@@ -8,4 +8,7 @@ This application will list the streams available on several French TV channels :
  * Arte
  * Canal+
 
-Needs Python 2
+WARNING:
+	All streams are **copyrighted by France Televisions, ARTE and Canal+**. 
+	You are **NOT** free to *share*, *sell* or *modify* those videos !
+	
