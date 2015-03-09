@@ -119,7 +119,7 @@ class Video(object):
 	        name = content['subtitle']
             videos.append( { 'name': name.strip(),
                     'url': content['onClick']['URLMedias'].replace('{FORMAT}','hls'),
-                    'icon': content['URLImage']})
+                    'icon': ''})
         #pprint.pprint(videos)
         return videos
 
