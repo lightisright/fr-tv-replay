@@ -40,6 +40,9 @@ import subprocess
 from optparse import OptionParser
 from cmd import Cmd
 
+import tty
+import termios
+
 VERSION = '0.2'
 DEFAULT_LANG = 'fr'
 QUALITY = ('sd', 'hd')
@@ -379,12 +382,32 @@ def die(msg):
 def print_results(results, verbose=True, page=1):
 	'''print list of video:
 	title in bold with a number followed by teaser'''
+	resume = False
 	for i in range(len(results)):
 		print '%s(%d) %s'% (BOLD, i+1+VIDEO_PER_PAGE*page, results[i]['title'] + NC)
 		if verbose:
 			print '	1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
 			print '	'+ results[i]['desc']
-	print ':: Display page %d' % page
+		# wait user action to display items or resume
+		if not(resume) and (i+1) % VIDEO_PER_PAGE == 0:
+			print 
+			attr = termios.tcgetattr(sys.stdin)
+			while True:
+				try:
+					print "> Waiting for %d items - Continue [Y/n] or [r]esume ? " % (len(results) - (i+1))
+					tty.setcbreak(sys.stdin.fileno())
+					kbinput = ord(sys.stdin.read(1))
+				finally:
+					termios.tcsetattr(sys.stdin, termios.TCSADRAIN, attr)
+				if kbinput in [ 10, 32, 78, 110, 89, 121, 82, 114 ]:    # SPACE, CRLF, 'n', 'N', 'y', 'Y', 'r', 'R' allowed
+					break
+			if kbinput == 82 or kbinput == 114:    # r ou R
+				resume = True
+			elif kbinput == 78 or kbinput == 110:    # n ou N
+				break
+			# else: 89 ou 121 ou 10 ou 32 >> y, Y, ' ', CRLF
+
+	#~ print ':: Display page %d' % page
 	if len(results) == 0:
 		print ':: the search returned nothing'
 
