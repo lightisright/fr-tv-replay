@@ -8,16 +8,17 @@ This application will list & play streams available on several French TV channel
  * Arte
  * Canal+
 
+*WARNING:*
+ * All streams are **copyrighted by France Televisions, ARTE and Canal+**. 
+ * You are **NOT** free to *share*, *sell* or *modify* those videos !
+
+*The reasons why i wrote this app'*
+
 This command-line software was written in Python as an alternative solution to avoid use of Flash Player which is not optimized for Linux-based OS.
 
-DSCLAIMER:
+This is my first app with Python, so please be clement... 
 
-This is my first app with Python, so please be clement...
-
-WARNING:
-
-All streams are **copyrighted by France Televisions, ARTE and Canal+**. 
-You are **NOT** free to *share*, *sell* or *modify* those videos !
+It was originally based on *solsticedhiver/arteVIDEOS* project, i made some tests & updates on it to make it work again then i made some adaptations for other channels.
 
 SOURCES:
 
