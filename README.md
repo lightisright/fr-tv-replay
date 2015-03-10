@@ -71,6 +71,58 @@ Here is the help message :
   	quit			 quit the cli
   	exit			 exit the cli
 
+Use-case
+--------
+Type :
+
+    $ ./fr-replay.py 
+    Type "help" to see available commands.
+    fr-replay> help
+
+List channels
+
+    fr-replay> channels
+
+List programs for Arte
+
+    fr-replay> programs Arte
+
+Get 'plus7' streams from Arte
+
+    fr-replay> get Arte:plus7
+
+List programs for Pluzz
+
+    fr-replay> programs Pluzz
+
+Get 'france2' streams from Pluzz
+
+    fr-replay> get Pluzz:france2
+
+List programs for CanalPlus
+
+    fr-replay> programs CanalPlus
+
+Get 'Emissions' streams from CanalPlus
+
+    fr-replay> get CanalPlus:Emissions
+
+Find streams which match 'X:enius' from cache
+
+    fr-replay> find X:enius
+
+Find streams which match '10/03/15' from cache
+
+    fr-replay> find 10/03/15
+
+Play 5th item
+
+    fr-replay> play 5
+
+Play 5th then 8th items
+
+    fr-replay> play 5 8
+
 Sources
 -------
 Here are the sources which helped me a lot for this project, thanks to all their contributors.
