@@ -71,6 +71,10 @@ Here is the help message :
   	quit			 quit the cli
   	exit			 exit the cli
 
+**Requirements to download streams :** wget + ffmpeg or avconv
+
+*Tests in progress on Ubuntu 14.04*
+
 First use
 --------
 Type :
