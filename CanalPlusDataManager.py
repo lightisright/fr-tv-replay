@@ -11,6 +11,7 @@ class CanalPlusDataManager(object):
 	
 	def __init__(self, nav):
 		self.nav = nav
+		self.DL_METHOD = 'FFMPEG'
 
 	def list_programs(self):
 		emission_types = scraper.Emission.get_emission_types()

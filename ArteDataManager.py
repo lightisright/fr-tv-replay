@@ -43,6 +43,7 @@ class ArteDataManager(object):
 	
 	def __init__(self, nav):
 		self.nav = nav
+		self.DL_METHOD = 'WGET'
 
 	def list_programs(self):
 		programs = ['plus7', 'selection', 'mostseen', 'lastchance']
@@ -54,13 +55,23 @@ class ArteDataManager(object):
 		'''Extract list of videos title, url, and teaser from JSON ressource'''
 		streams = []
 		for l in lis:
-			vjson_url = "http://org-www.arte.tv/papi/tvguide/videos/stream/player/"+lang+"/"+l["em"]+"_PLUS7-"+lang+"/ALL/ALL.json"
-			try:
-				streams.append({'title':l["title"], 'desc':l["desc"], 'date':l['airdate_long'], 'time':'', 'duration':str(l['duration']), 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
-			except IndexError:
-				# empty title ??
-				streams.append({'title':'== NO TITLE ==', 'desc':l["desc"], 'date':l['airdate_long'], 'time':'', 'duration':str(l['duration']), 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
-		
+			#vjson_url = "http://org-www.arte.tv/papi/tvguide/videos/stream/player/"+lang+"/"+l["em"]+"_PLUS7-"+lang+"/ALL/ALL.json"
+			stream = {}
+			# first check if key ids exist
+			if l['title'] is None:
+				stream['title'] = ''
+			else:
+				stream['title'] = l['title']
+			if l['desc'] is None:
+				stream['desc'] = ''
+			else:
+				stream['desc'] = l['desc']
+			stream['date'] = l['airdate_long']
+			stream['time'] = ''
+			stream['duration'] = str(l['duration'])
+			stream['www-url'] = V_DOMAIN+l["url"]
+			stream['url'] = "http://org-www.arte.tv/papi/tvguide/videos/stream/player/"+lang+"/"+l["em"]+"_PLUS7-"+lang+"/ALL/ALL.json"
+			streams.append(stream)
 		return streams
 	
 	def retrieve_streams(self, program):

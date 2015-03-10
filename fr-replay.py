@@ -43,13 +43,15 @@ from cmd import Cmd
 import tty
 import termios
 
+import time
+
 VERSION = '0.2'
 DEFAULT_LANG = 'fr'
 QUALITY = ('sd', 'hd')
 DEFAULT_QUALITY = 'hd'
 DEFAULT_DLDIR = os.getcwd()
 
-VIDEO_PER_PAGE = 25
+VIDEO_PER_PAGE = 10
 
 SEARCH = {'fr': 'recherche', 'de':'suche', 'en': 'search'}
 LANG = SEARCH.keys()
@@ -218,11 +220,11 @@ class MyCmd(Cmd):
 	def do_find(self, arg):
 		'''find
 		find streams in cache'''
-		print ":: find %s streams in cache" % arg
+		print ":: find streams matching with <%s> in cache" % arg
 		del self.nav.results[:]
 		for program in self.nav.catalog.keys():
 			for stream in self.nav.catalog[program]:
-				if arg.lower() in stream['title'].lower():
+				if arg.lower() in stream['title'].lower() or arg.lower() in stream['date'].lower() or arg.lower() in stream['desc'].lower():
 					self.nav.results.append(stream)
 		print_results(self.nav.results)
 
@@ -253,8 +255,8 @@ class MyCmd(Cmd):
 			video = self.nav[arg]
 			if 'info' not in video:
 				get_video_player_info(video, self.nav.options)
-			print '%s== %s ==%s'% (BOLD, video['title'], NC)
-			print video['info']
+			print '%s== %s ==%s' % (BOLD, video['title'], NC)
+			print '%s== %s ==%s' % (HIGH, video['info'], NC)
 		except ValueError:
 			print >> sys.stderr, 'Error: wrong argument (must be an integer)'
 		except IndexError:
@@ -298,7 +300,8 @@ class MyCmd(Cmd):
 		# TODO: do that in parallel ?
 		for v in playlist:
 			channel = self.nav.get_plugin(v['channel'])
-			record(v, channel.get_stream_uri(v), self.nav.options)
+			print channel.DL_METHOD
+			record(v, channel.DL_METHOD, channel.get_stream_uri(v), self.nav.options)
 
 	def do_dllist(self, arg):
 		'''dllist
@@ -312,7 +315,7 @@ class MyCmd(Cmd):
 		for v in self.nav.dllist:
 			print ':: Recording stream(s): ' + v['title']
 			channel = self.nav.get_plugin(v['channel'])
-			record(v, channel.get_stream_uri(v), self.nav.options)
+			record(v, channel.DL_METHOD, channel.get_stream_uri(v), self.nav.options)
 
 	def complete_lang(self, text, line, begidx, endidx):
 		if text == '':
@@ -357,7 +360,7 @@ class MyCmd(Cmd):
 	def do_programs(self, arg):
 		'''programs channel...
 	display available programs for channel'''
-		channel = self.nav.__get_plugin__(arg)
+		channel = self.nav.get_plugin(arg)
 		if channel is not None:
 			channel.list_programs()
 
@@ -467,8 +470,8 @@ def print_results(results, verbose=True):
 	for i in range(len(results)):
 		print '%s(%d) %s'% (BOLD, i+1, results[i]['title'] + NC)
 		if verbose:
-			print '	1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
-			print '	'+ results[i]['desc']
+			print '   1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
+			print '   %s' % results[i]['desc']
 		# wait user action to display items or resume
 		if not(resume) and (i+1) % VIDEO_PER_PAGE == 0:
 			print 
@@ -507,13 +510,21 @@ def play(video, options):
 	else:
 		print >> sys.stderr, 'Error: no player has been found.'
 
-def record(video, url, options):
+def record(video, dlmethod, url, options):
 	cwd = os.getcwd()
 	os.chdir(options.dldir)
 	#~ vurl = make_cmd_args(video, options)
-	output_file = video['title'].replace('/', '_')+'__'+urlparse.urlparse(url).path.split('/')[-1]
+	output_file = time.strftime('%y%m%d-%H%M%S',time.localtime())+'_'+video['title'].replace('/', '_')+'__'+urlparse.urlparse(url).path.split('/')[-1]
 	log_file = output_file+'.log'
-	cmd = "wget -r --tries=10 -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
+	
+	if dlmethod == 'WGET':
+		cmd = "wget -r --tries=10 -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
+	elif dlmethod == 'FFMPEG':
+		cmd = "avconv -i %s -c copy %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
+	else:
+		print >> sys.stderr, 'Error: record method <%s> not supported. Record aborted.' % dlmethod
+		return
+		
 	if os.path.exists(output_file):
 		print ':: Resuming download of %s' % output_file
 	else:
@@ -526,9 +537,9 @@ def record(video, url, options):
 			os.unlink(log_file)
 		print ':: Download complete'
 	except OSError:
-		print >> sys.stderr, 'Error: record command not found. Record aborted.'
+		print >> sys.stderr, 'Error: record command for %s method not found. Record aborted.' % dlmethod
 	except subprocess.CalledProcessError:
-		print >> sys.stderr, 'Error: download command failed. Record failed.'
+		print >> sys.stderr, 'Error: download command for %s method failed. Record failed.' % dlmethod
 		# delete file if it was not there before conversion process started
 		if os.path.isfile(output_file) and not is_file_present:
 			os.unlink(output_file)

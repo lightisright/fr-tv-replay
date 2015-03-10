@@ -26,6 +26,7 @@ class PluzzDataManager(object):
 	
 	def __init__(self, nav):
 		self.nav = nav
+		self.DL_METHOD = 'FFMPEG'
 		# videos base uri (loaded dynamically in message_FT.json)
 		self.video_base_uri = ""
 
@@ -88,7 +89,6 @@ class PluzzDataManager(object):
 			return None
 		
 		# Select JSON uri
-		# Default = "plus7" catalog (all videos)
 		json_uri = PLUZZ_CACHE_DIR+'/catch_up_'+program+'.json'
 
 		# Retrieve JSON data
