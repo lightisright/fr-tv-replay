@@ -8,9 +8,13 @@
 # The order is significant: the first player available is used
 PLAYERS = (
 		'vlc',
-		'mplayer -really-quiet -',
-		'xine stdin:/',
-		'/usr/bin/totem --enqueue fd://0', # you could use absolute path for the command too
+		'mplayer',
+		'/usr/bin/totem', # you could use absolute path for the command too
+		)
+
+RECORDERS = (
+		'ffmpeg',
+		'avconv'
 		)
 
 
@@ -297,10 +301,8 @@ class MyCmd(Cmd):
 				self.nav.extra_help()
 				return
 		print ':: Recording video(s): ' + ', '.join('#%s' % i for i in arg.split())
-		# TODO: do that in parallel ?
 		for v in playlist:
 			channel = self.nav.get_plugin(v['channel'])
-			print channel.DL_METHOD
 			record(v, channel.DL_METHOD, channel.get_stream_uri(v), self.nav.options)
 
 	def do_dllist(self, arg):
@@ -520,7 +522,8 @@ def record(video, dlmethod, url, options):
 	if dlmethod == 'WGET':
 		cmd = "wget -r --tries=10 -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
 	elif dlmethod == 'FFMPEG':
-		cmd = "avconv -i %s -c copy %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
+		recorder = find_player(RECORDERS)
+		cmd = recorder+" -i %s -c copy %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
 	else:
 		print >> sys.stderr, 'Error: record method <%s> not supported. Record aborted.' % dlmethod
 		return
