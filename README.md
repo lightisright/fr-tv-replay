@@ -1,7 +1,7 @@
 fr-tv-replay
 =============
 
-Debug in progress, no release for now.....
+**Status :** Functionnal but debug in progress, no release for now.....
 
 Search &amp; play several French Television Replay streams (Pluzz, Arte, Canal+) - Python / CLI
 
