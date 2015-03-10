@@ -14,7 +14,7 @@ This application will list & play streams available on several French TV channel
 
 *The reasons why i wrote this app'*
 
-This command-line software was written in Python as an alternative solution to avoid use of Flash Player which is not optimized for Linux-based OS.
+This command-line software was written in Python as an alternative solution to avoid use of Flash Player which is not optimized for Linux-based OS. This may also help you if like me your internet connexion bandwith is too small to watch HD live streams.
 
 This is my first app with Python, so please be clement... 
 
