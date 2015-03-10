@@ -21,7 +21,7 @@ This command-line software was written in Python as an alternative solution to a
 
 This is my first app with Python, so please be clement... 
 
-It was originally based on *solsticedhiver/arteVIDEOS* project, i made some tests & updates on it to make it work again then i made some adaptations for other channels.
+It was originally based on *[arteVIDEOS](https://github.com/solsticedhiver/arteVIDEOS)* project, i made some tests & updates on it to make it work again then i made some adaptations for other channels.
 
 How-to
 ------
