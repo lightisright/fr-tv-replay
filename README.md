@@ -71,7 +71,7 @@ Here is the help message :
   	quit			 quit the cli
   	exit			 exit the cli
 
-Use-case
+First use
 --------
 Type :
 
