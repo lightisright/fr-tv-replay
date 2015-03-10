@@ -50,21 +50,20 @@ class ArteDataManager(object):
 		for program in programs:
 			print '.... %s' % program
 
-	def __extract_streams__(self, lis, lang, search=None):
+	def __extract_streams__(self, lis, lang):
 		'''Extract list of videos title, url, and teaser from JSON ressource'''
 		streams = []
 		for l in lis:
 			vjson_url = "http://org-www.arte.tv/papi/tvguide/videos/stream/player/"+lang+"/"+l["em"]+"_PLUS7-"+lang+"/ALL/ALL.json"
 			try:
-				if search.lower() in l["title"].lower() or search == '':
-					streams.append({'title':l["title"], 'desc':l["desc"], 'date':'', 'time':'', 'duration':'', 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
+				streams.append({'title':l["title"], 'desc':l["desc"], 'date':l['airdate_long'], 'time':'', 'duration':str(l['duration']), 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
 			except IndexError:
 				# empty title ??
-				streams.append({'title':'== NO TITLE ==', 'desc':l["desc"], 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
+				streams.append({'title':'== NO TITLE ==', 'desc':l["desc"], 'date':l['airdate_long'], 'time':'', 'duration':str(l['duration']), 'www-url':V_DOMAIN+l["url"], 'url':vjson_url})
 		
 		return streams
 	
-	def retrieve_streams(self, program, search=None):
+	def retrieve_streams(self, program):
 		'''Get requested program streams index'''
 		
 		# Select JSON uri
@@ -83,9 +82,10 @@ class ArteDataManager(object):
 		try:
 			print ':: Retrieving <' + program + '> list <'+self.nav.options.lang+'>'
 			url = json_uri % (self.nav.options.lang)
-			obj = json.load(urllib2.urlopen(url))			
+			obj = json.load(urllib2.urlopen(url))
 			lis = obj["videos"]
-			self.nav.results.append(self.__extract_streams__(lis, V_JSONLANG[self.nav.options.lang], search))
+			streams = self.__extract_streams__(lis, V_JSONLANG[self.nav.options.lang])
+			return streams
 		except urllib2.URLError:
 			die("Can't get the arte+7 Master JSON resource")
 			

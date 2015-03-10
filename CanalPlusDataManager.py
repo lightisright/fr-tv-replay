@@ -22,7 +22,7 @@ class CanalPlusDataManager(object):
 				videos = scraper.Video.from_url(emission['url'])
 				print ':::::: %s : %d streams' % (emission['name'], len(videos))
 
-	def retrieve_streams(self, program, search=None):
+	def retrieve_streams(self, program):
 		'''Get requested program streams index'''
 		
 		if program == '':
@@ -40,10 +40,7 @@ class CanalPlusDataManager(object):
 					videos = scraper.Video.from_url(emission['url'])
 					print ':::::: %d streams found from : %s' % (len(videos), emission['name'])
 					for video in videos:
-						if search.lower() in video['name'].lower() or search == '':
-							streams.append({'title':video['name'], 'desc':'', 'date':'', 'time':'', 'duration':'', 'www-url':emission['url'], 'url':video['url']})
-				
-		self.nav.results.append(streams)
+						streams.append({'title':video['name'], 'desc':'', 'date':'', 'time':'', 'duration':'', 'www-url':emission['url'], 'url':video['url']})
 			
 		return streams
 

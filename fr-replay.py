@@ -74,17 +74,22 @@ class Navigator(object):
 	def __init__(self, options):
 		self.options = options
 		self.more = False
-		self.last_cmd = ''
-		self.page = 0
 
 		# holds last search result from any command (list, program, search)
 		self.results = []
 
+		# stream download list
+		self.dllist = []
+		
+		# cache catalogs results
+		self.catalog = {}
+		self.searchs = {}
+
 	def __getitem__(self, key):
 		indx = int(key)-1
-		return self.results[indx/VIDEO_PER_PAGE][indx % VIDEO_PER_PAGE]
+		return self.results[indx]
 		
-	def __get_plugin__(self, channel):
+	def get_plugin(self, channel):
 		try:
 			# import module & find requested class
 			cdm = __import__(channel+"DataManager")
@@ -99,11 +104,11 @@ class Navigator(object):
 		if len(self.results) == 0:
 			print >> sys.stderr, 'You need to run either a list, channels or programs command first'
 
-	def get_channel_content(self, channel, program, search):
+	def get_channel_content(self, channel, program):
 		'''Select channel Data Manager and get Program content'''
-		self.channel = self.__get_plugin__(channel)
+		self.channel = self.get_plugin(channel)
 		if self.channel is not None:
-			self.channel.retrieve_streams(program, search)
+			return self.channel.retrieve_streams(program)
 		else:
 			print >> sys.stderr, "Error: Channel content could not be found."
 
@@ -119,53 +124,52 @@ class MyCmd(Cmd):
 		else:
 			self.nav = nav
 
-	def postcmd(self, stop, line):
-		if line.startswith(HIST_CMD):
-			self.nav.last_cmd = line
-		return stop
-
-
 	def do_add(self, arg):
 		'''add channel[:program] to results ...
 	display available videos or search for given videos(s)'''
 		channel = ''
 		program = ''
-		search = ''
+		searchstr = ''
 		if arg != '':
 			# Split search parameter (after %)
 			args1 = arg.split("%",2)
 			if ( len(args1) == 2 ):
-				search = args1[1]
+				searchstr = args1[1]
 			# Split channel:program parameter (separated by :)
 			args2 = args1[0].split(":",2)
 			channel = args2[0]
 			if ( len(args2) == 2 ):
 				program = args2[1]
 				
-		self.nav.get_channel_content(channel, program, search)
-		try:
-			print_results(self.nav.results[self.nav.page], True, page=self.nav.page)
-		except IndexError:
-			print >> sys.stderr, 'Error: unknown channel'
-		except ValueError:
-			print >> sys.stderr, 'Error: wrong argument; must be an integer'
+		# manage cache requested programs for future use (find)
+		if (channel+':'+program) not in self.nav.catalog.keys() :
+			streams = self.nav.get_channel_content(channel, program)
+			if streams is not None:
+				# set source channel in streams in order to play / record it later
+				for stream in streams:
+					stream['channel']=channel
+				self.nav.catalog[channel+':'+program] = streams
+		else:
+			streams = self.nav.catalog[channel+':'+program]
+		
+		if streams is not None:
+			# if search enabled : search streams and cache search results
+			if searchstr != '':
+				streams = search(streams, searchstr)
+				self.nav.searchs[channel+':'+program+'%'+searchstr] = streams
+			
+			for stream in streams:
+				self.nav.results.append(stream)
 
-	def do_previous(self, arg):
-		if self.nav.last_cmd.startswith(HIST_CMD) and self.nav.page > 0:
-			self.nav.page -= 1
-			print_results(self.nav.results[self.nav.page], page=self.nav.page)
-		return False
-
-	def do_next(self, arg):
-		if self.nav.last_cmd.startswith(HIST_CMD):
-			self.nav.page += 1
-			if self.nav.page > len(self.nav.results)-1:
-				self.nav.more = True
-				self.onecmd(self.nav.last_cmd)
-				self.nav.more = False
-			else:
-				print_results(self.nav.results[self.nav.page], page=self.nav.page)
-		return False
+			try:
+				print ":: %d streams found, type 'list' to display results or 'find STRING' for whole cache search" % len(streams)
+				#print_results(streams, True)
+			except IndexError:
+				print >> sys.stderr, 'Error: unknown channel'
+			except ValueError:
+				print >> sys.stderr, 'Error: wrong argument; must be an integer'
+		else:
+			print >> sys.stderr, 'Error: Not stream found, please check your channel[:program] request (program may be mandatory depending on channel plugin)'
 
 	def do_url(self, arg):
 		'''url NUMBER [NUMBER] ...
@@ -174,7 +178,7 @@ class MyCmd(Cmd):
 		playlist = []
 		for i in arg.split():
 			try:
-				video = self.nav.results[0][int(i)-1]
+				video = self.nav.results[int(i)-1]
 				print video['title']+" : "+video['url']
 			except ValueError:
 				print >> sys.stderr, '"%s": wrong argument, must be an integer' % i
@@ -198,6 +202,50 @@ class MyCmd(Cmd):
 			#~ print >> sys.stderr, 'Error: no video with this number'
 			#~ self.nav.extra_help()
 
+	def do_cache(self, arg):
+		'''cache
+		display programs cache'''
+		print ":: %d programs in cache" % len(self.nav.catalog.keys())
+		for entry in self.nav.catalog.keys():
+			print ">> "+entry
+
+	def do_clearcache(self, arg):
+		'''cache
+		clears programs cache'''
+		self.nav.catalog = {}
+		self.do_cache(arg)
+
+	def do_find(self, arg):
+		'''find
+		find streams in cache'''
+		print ":: find %s streams in cache" % arg
+		del self.nav.results[:]
+		for program in self.nav.catalog.keys():
+			for stream in self.nav.catalog[program]:
+				if arg.lower() in stream['title'].lower():
+					self.nav.results.append(stream)
+		print_results(self.nav.results)
+
+	def do_list(self, arg):
+		'''list
+		display last results'''
+		if len(arg) > 0:
+			if arg in self.nav.catalog.keys():
+				print ":: display '%s' program cache" % arg
+				print_results(self.nav.catalog[arg])
+			else:
+				print >> sys.stderr, ":: Error : list '%s' was not found in program cache" % arg
+		else:
+			print ":: display last results"
+			print_results(self.nav.results)
+
+	def do_add4dl(self, arg):
+		'''add4dl
+		add last search results to download list'''
+		print ":: add last search results to download list"
+		self.nav.dllist = list(self.nav.results)
+		self.do_dllist(arg)
+
 	def do_info(self, arg):
 		'''info NUMBER
 		display details about chosen video'''
@@ -219,7 +267,7 @@ class MyCmd(Cmd):
 		playlist = []
 		for i in arg.split():
 			try:
-				playlist.append(self.nav.results[0][int(i)-1])
+				playlist.append(self.nav.results[int(i)-1])
 			except ValueError:
 				print >> sys.stderr, '"%s": wrong argument, must be an integer' % i
 				return
@@ -229,7 +277,8 @@ class MyCmd(Cmd):
 				return
 		print ':: Playing video(s): ' + ', '.join('#%s' % i for i in arg.split())
 		for v in playlist:
-			play(self.nav.channel.get_stream_uri(v), self.nav.options)
+			channel = self.nav.get_plugin(v['channel'])
+			play(channel.get_stream_uri(v), self.nav.options)
 
 	def do_record(self, arg):
 		'''record NUMBER [NUMBER] ...
@@ -248,7 +297,22 @@ class MyCmd(Cmd):
 		print ':: Recording video(s): ' + ', '.join('#%s' % i for i in arg.split())
 		# TODO: do that in parallel ?
 		for v in playlist:
-			record(v, self.nav.options)
+			channel = self.nav.get_plugin(v['channel'])
+			record(v, channel.get_stream_uri(v), self.nav.options)
+
+	def do_dllist(self, arg):
+		'''dllist
+	displays ready for download streams'''
+		print "\n:: following items are ready for download, type 'startdl' to start download..."
+		print_results(self.nav.dllist)
+
+	def do_startdl(self, arg):
+		'''startdl
+	download the chosen videos to a local file'''
+		for v in self.nav.dllist:
+			print ':: Recording stream(s): ' + v['title']
+			channel = self.nav.get_plugin(v['channel'])
+			record(v, channel.get_stream_uri(v), self.nav.options)
 
 	def complete_lang(self, text, line, begidx, endidx):
 		if text == '':
@@ -328,22 +392,32 @@ class MyCmd(Cmd):
 		'''print the help'''
 		if arg == '':
 			print '''COMMANDS:
-	channels                   get available channels list for channel
-	programs channel           get programs list for channel
+	# About channels and programs
+	channels                            get available channels list for channel
+	programs channel                    get programs list for channel
 
-	get    channel[:program]   get videos provided by channel[:program]
-	add    channel[:program]   add videos provided by channel[:program] to list
-	search STRING	           filter videos list with STRING
-	
-	next			 list videos of the next page
-	previous		 list videos of previous page
+	# Find streams
+	get    channel[:program][%search]   get videos provided by channel[:program] and filter content with [%search]
+	list   [STRING]	                    display last results or [STRING] cache results if [STRING] arg set
+	find   STRING                       find videos list with STRING in cache
 
-	url NUMBER	   show url of video
+	# Stream dl commands
+	add4dl                              add current results (displayed by 'list' command) to dllist
+	dllist                              display streams to download
+	startdl                             start download
+	dldir [PATH]                        display or change download directory
+
+	# Cache management
+	cache			 display programs in cache
+	clearcache		 clear programs in cache
+
+	# Simple commands
 	play NUMBERS	 play chosen videos
 	record NUMBERS   download and save videos to a local file
+	url NUMBER	   show url of video
 	info NUMBER	  display details about given video
 
-	dldir [PATH]	 display or change download directory
+	# Configuration
 	lang [fr|de|en]  display or switch to a different language
 	quality [sd|hd]  display or switch to a different video quality
 
@@ -379,12 +453,19 @@ def die(msg):
 	print >> sys.stderr, 'Error: %s. See %s --help' % (msg, sys.argv[0])
 	sys.exit(1)
 
-def print_results(results, verbose=True, page=1):
+def search(results, searchstr):
+	found = []
+	for i in range(len(results)):
+		if searchstr.lower() in results[i]['title'].lower():
+			found.append(results[i])
+	return found
+
+def print_results(results, verbose=True):
 	'''print list of video:
 	title in bold with a number followed by teaser'''
 	resume = False
 	for i in range(len(results)):
-		print '%s(%d) %s'% (BOLD, i+1+VIDEO_PER_PAGE*page, results[i]['title'] + NC)
+		print '%s(%d) %s'% (BOLD, i+1, results[i]['title'] + NC)
 		if verbose:
 			print '	1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
 			print '	'+ results[i]['desc']
@@ -394,7 +475,7 @@ def print_results(results, verbose=True, page=1):
 			attr = termios.tcgetattr(sys.stdin)
 			while True:
 				try:
-					print "> Waiting for %d items - Continue [Y/n] or [r]esume ? " % (len(results) - (i+1))
+					print "> %d items next : Continue [Y/n] or [r]esume ? " % (len(results) - (i+1))
 					tty.setcbreak(sys.stdin.fileno())
 					kbinput = ord(sys.stdin.read(1))
 				finally:
@@ -426,13 +507,13 @@ def play(video, options):
 	else:
 		print >> sys.stderr, 'Error: no player has been found.'
 
-def record(video, options):
+def record(video, url, options):
 	cwd = os.getcwd()
 	os.chdir(options.dldir)
 	#~ vurl = make_cmd_args(video, options)
-	output_file = video['title']+'__'+urlparse.urlparse(video).path.split('/')[-1]
+	output_file = video['title'].replace('/', '_')+'__'+urlparse.urlparse(url).path.split('/')[-1]
 	log_file = output_file+'.log'
-	cmd = "wget -r --tries=10 -o %s -O %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), video.replace(' ','%20'))
+	cmd = "wget -r --tries=10 -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
 	if os.path.exists(output_file):
 		print ':: Resuming download of %s' % output_file
 	else:
@@ -542,7 +623,7 @@ COMMANDS
 		nav.search(term)
 		nav.last_cmd = 'search %s' % term
 		if nav.results is not None:
-			print_results(nav.results[0])
+			print_results(nav.results)
 			MyCmd(options, nav=nav).cmdloop()
 
 if __name__ == '__main__':

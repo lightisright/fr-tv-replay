@@ -9,7 +9,7 @@ PLUZZ_DOMAIN = 'http://www.pluzz.fr'
 PLUZZ_CACHE_FILE = 'cache/pluzz_flux_main.zip'
 PLUZZ_CACHE_DIR = 'cache'
 PLUZZ_PROGRAMS = ['france1', 'france2', 'france2', 'france3', 'france4', 'france5', 'franceo']
-PLUZZ_CACHE_REFRESH_THRESHOLD = 120    # cache refresh thresold in seconds
+PLUZZ_CACHE_REFRESH_THRESHOLD = 600    # cache refresh thresold in seconds
 
 import urllib
 import json
@@ -36,13 +36,14 @@ class PluzzDataManager(object):
 		if os.path.isfile(PLUZZ_CACHE_FILE) :
 			#print ":: Pluzz master ressource created : %s" % time.ctime(os.path.getctime(PLUZZ_CACHE_DIR))
 			#print ":: Pluzz master ressource last modification : %s" % time.ctime(os.path.getmtime(PLUZZ_CACHE_DIR))
-			if os.path.getmtime(PLUZZ_CACHE_FILE) :
-				delta = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(PLUZZ_CACHE_DIR))
-				if delta.total_seconds() < PLUZZ_CACHE_REFRESH_THRESHOLD :
-					print ":: Pluzz master ressource cache (%d) didn't expired thresold of %d seconds." % (delta.total_seconds(), PLUZZ_CACHE_REFRESH_THRESHOLD)
-					dl = False
+			delta = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(PLUZZ_CACHE_FILE))
+			if delta.total_seconds() < PLUZZ_CACHE_REFRESH_THRESHOLD :
+				print ":: Pluzz master ressource cache (%d) didn't expired thresold of %d seconds." % (delta.total_seconds(), PLUZZ_CACHE_REFRESH_THRESHOLD)
+				dl = False
+			else:
+				print ":: Pluzz master ressource cache (%d) expired thresold of %d seconds." % (delta.total_seconds(), PLUZZ_CACHE_REFRESH_THRESHOLD)
 		
-		if dl:
+		if dl == True:
 			try:
 				# download ressources
 				print ':: Download Pluzz master ressource...'
@@ -77,7 +78,7 @@ class PluzzDataManager(object):
 		for program in PLUZZ_PROGRAMS:
 			print '.... %s' % program
 
-	def retrieve_streams(self, program, search=None):
+	def retrieve_streams(self, program):
 		'''Get requested program streams index'''
 		
 		self.__dl__()
@@ -98,17 +99,12 @@ class PluzzDataManager(object):
 			streams = []
 			for l in lis:
 				title = l["genre_simplifie"]+' - '+l["titre"]
-				if search.lower() in title.lower() or search == '':
-					streams.append({'title':title, 'desc':l["accroche"], 'date':l["date"], 'time':l["heure"], 'duration':l["duree"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':self.video_base_uri+l["url_video"]})
-					#self.nav.results.append({'title':title, 'desc':l["accroche"], 'date':l["date"], 'time':l["heure"], 'duration':l["duree"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':self.video_base_uri+l["url_video"]})
-					#~ except IndexError:
-						#~ # empty title ??
-						#~ streams.append({'title':'== NO TITLE ==', 'desc':l["accroche"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':l["url_video"]})
-				self.nav.results.append(streams)
+				streams.append({'title':title, 'desc':l["accroche"], 'date':l["date"], 'time':l["heure"], 'duration':l["duree"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':self.video_base_uri+l["url_video"]})
+			return streams
 		except IOError:
 			print "Can't read ressource for <%s>" % program
 				
-		return streams
+		return None
 
 	def get_stream_uri(self, video):
 		'''Return stream URI for selected stream (index) in Navigator results list'''
