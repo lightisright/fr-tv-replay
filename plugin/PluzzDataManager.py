@@ -93,7 +93,7 @@ class PluzzDataManager(object):
 
 		# Retrieve JSON data
 		try:
-			print ':: Retrieving <' + program + '> list <'+self.nav.options.lang+'>'
+			print ':: Retrieving <' + program + '> list'
 			obj = json.loads(open(json_uri).read())			
 			lis = obj["programmes"]
 			streams = []
