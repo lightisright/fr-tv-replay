@@ -49,7 +49,7 @@ import termios
 
 import time
 
-VERSION = '0.2'
+VERSION = '0.3'
 DEFAULT_LANG = 'fr'
 QUALITY = ('sd', 'hd')
 DEFAULT_QUALITY = 'hd'
@@ -57,24 +57,11 @@ DEFAULT_DLDIR = os.getcwd()
 
 VIDEO_PER_PAGE = 10
 
-SEARCH = {'fr': 'recherche', 'de':'suche', 'en': 'search'}
-LANG = SEARCH.keys()
+LANG = ('fr', 'de', 'en')
 HIST_CMD = ('channels', 'programs', 'get', 'add')
 
 BOLD   = '[1m'
 NC	 = '[0m'	# no color
-
-
-# PLUZZ: http://webservices.francetelevisions.fr/catchup/flux/flux_main.zip
-#		 cf. https://gitorious.org/grilo/grilo-lua-sources/commit/f9f0c7d7d40561a49ba56a35c2748fd02759fd81
-#		 cf. https://github.com/mikebzh44/France-TV-Pluzz-for-XBMC/blob/master/plugin.video.FranceTVPluzz/default.py
-
-# C+ : https://github.com/pelrol/xbmc-my-canal/blob/master/resources/lib/scraper.py
-#		 cf. https://github.com/pelrol/xbmc-my-canal/blob/master/addon.py
-
-class StdVideo(object):
-	def __init__(self, title, desc, date, url, fmt):
-		print "coucou"
 
 class Navigator(object):
 	def __init__(self, options):
@@ -372,17 +359,18 @@ class MyCmd(Cmd):
 	def do_channels(self, arg):
 		'''channels...
 	display available programs for channel'''
+		# TODO : get channels dynamically from plugin directory
 		print ':: Available channels'
-		print ':: CanalPlus'
-		print ':: Arte'
-		print ':: Pluzz'
+		print '.. CanalPlus'
+		print '.. Arte'
+		print '.. Pluzz'
+		print '.. FranceInter'
 
 	def do_get(self, arg):
 		'''get channel[:program] results ...
 	display available videos or search for given videos(s)'''
 		del self.nav.results[:]
 		self.do_add(arg)
-
 
 	def do_dldir(self,arg):
 		'''dldir [PATH] ...
@@ -580,7 +568,7 @@ def find_player(players):
 	return None
 
 def main():
-	usage = '''Usage: %prog url|play|record [OPTIONS] URL
+	usage = '''Usage: %prog play|record channel[:program] [--find STRING] [OPTIONS] URL
 	   %prog search [OPTIONS] STRING...
 	   %prog
 
@@ -600,14 +588,10 @@ COMMANDS
 			a simple command line interpreter'''
 
 	parser = OptionParser(usage=usage)
-	parser.add_option('-d', '--downloaddir', dest='dldir', type='string',
-			default=DEFAULT_DLDIR, action='store', help='directory for downloads')
-	parser.add_option('-l', '--lang', dest='lang', type='string', default=DEFAULT_LANG,
-			action='store', help='language of the video fr, de, en (default: fr)')
-	parser.add_option('-q', '--quality', dest='quality', type='string', default=DEFAULT_QUALITY,
-			action='store', help='quality of the video sd or hd (default: hd)')
-	parser.add_option('--verbose', dest='verbose', default=False,
-			action='store_true', help='show output of rtmpdump')
+	parser.add_option('-d', '--downloaddir', dest='dldir', type='string', default=DEFAULT_DLDIR, action='store', help='directory for downloads')
+	parser.add_option('-l', '--lang', dest='lang', type='string', default=DEFAULT_LANG, action='store', help='language of the video fr, de, en (default: fr)')
+	parser.add_option('-q', '--quality', dest='quality', type='string', default=DEFAULT_QUALITY, action='store', help='quality of the video sd or hd (default: hd)')
+	parser.add_option('-f', '--find', dest='find', default='', action='store_true', help='filter results with string')
 
 	options, args = parser.parse_args()
 
@@ -620,28 +604,32 @@ COMMANDS
 	if len(args) < 2:
 		MyCmd(options).cmdloop()
 		sys.exit(0)
-	if args[0] not in ('url', 'play', 'record', 'search'):
+
+	if args[0] not in ('url', 'play', 'record'):
 		die('Invalid command')
 
 	if args[0] == 'url':
-		print get_rtmp_url(args[1], quality=options.quality, lang=options.lang)[0]
+		print ".. Url %s" % args[1]
+		#~ print get_rtmp_url(args[1], quality=options.quality, lang=options.lang)[0]
 
-	elif args[0] == 'play':
-		play({'url':args[1]}, options)
-		sys.exit(1)
+	if args[0] == 'play':
+		print ".. Play %s" % args[1]
+		#~ play({'url':args[1]}, options)
+		#~ sys.exit(1)
 
-	elif args[0] == 'record':
-		record({'url':args[1]}, options)
+	if args[0] == 'record':
+		print ".. Record %s" % args[1]
+		#~ record({'url':args[1]}, options)
 
-	elif args[0] == 'search':
+	if args[0] == '--find':
 		term = ' '.join(args[1:])
 		print ':: Searching for "%s"' % term
-		nav = Navigator(options)
-		nav.search(term)
-		nav.last_cmd = 'search %s' % term
-		if nav.results is not None:
-			print_results(nav.results)
-			MyCmd(options, nav=nav).cmdloop()
+		#~ nav = Navigator(options)
+		#~ nav.search(term)
+		#~ nav.last_cmd = 'search %s' % term
+		#~ if nav.results is not None:
+			#~ print_results(nav.results)
+			#~ MyCmd(options, nav=nav).cmdloop()
 
 if __name__ == '__main__':
 	try:
