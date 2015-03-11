@@ -94,16 +94,18 @@ class Navigator(object):
 	def __getitem__(self, key):
 		indx = int(key)-1
 		return self.results[indx]
-		
+
 	def get_plugin(self, channel):
 		try:
 			# import module & find requested class
-			cdm = __import__(channel+"DataManager")
+			cdm = __import__("plugin."+channel+"DataManager", fromlist=[channel+"DataManager"])
 			cdmclass = getattr(cdm, channel+"DataManager")
-			# create channel & retrieve streams
 			return cdmclass(self)
 		except ImportError:
-			print >> sys.stderr, 'Error: DataManager for channel "%s" could not be found.' % channel
+			print >> sys.stderr, 'Error: DataManager plugin for channel "%s" could not be found.' % channel
+			return None
+		except TypeError:
+			print >> sys.stderr, 'Error: DataManager plugin class "%s" could not be loaded.' % (channel+"DataManager")
 			return None
 
 	def extra_help(self):
@@ -111,7 +113,7 @@ class Navigator(object):
 			print >> sys.stderr, 'You need to run either a list, channels or programs command first'
 
 	def get_channel_content(self, channel, program):
-		'''Select channel Data Manager and get Program content'''
+		'''Select channel Data Manager plugin and get Program content'''
 		self.channel = self.get_plugin(channel)
 		if self.channel is not None:
 			return self.channel.retrieve_streams(program)
