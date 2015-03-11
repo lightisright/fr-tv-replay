@@ -178,6 +178,7 @@ class MyCmd(Cmd):
 				print >> sys.stderr, 'Error: wrong argument; must be an integer'
 		else:
 			print >> sys.stderr, 'Error: Not stream found, please check your channel[:program] request (program may be mandatory depending on channel plugin)'
+			print >> sys.stderr, 'To get availables programs for requested channel, execute : programs %s' % channel
 
 	def do_url(self, arg):
 		'''url NUMBER [NUMBER] ...
