@@ -33,6 +33,8 @@ This is my first app with Python, so please be clement... It was originally base
 How-to
 ------
 
+**CLI Interactive mode help**
+
 Type :
 
     $ ./fr-replay.py 
@@ -45,38 +47,71 @@ Then you will be invited to get some more help :
 Here is the help message :
 
     COMMANDS:
-    # About channels and programs
-  	channels                            get available channels list for channel
-  	programs channel                    get programs list for channel
-  
-  	# Find streams
-  	get    channel[:program][%search]   get videos provided by channel[:program] and filter content with [%search]
-  	list   [STRING]	                    display last results or [STRING] cache results if [STRING] arg set
-  	find   STRING                       find videos list with STRING in cache
-  
-  	# Stream dl commands
-  	add4dl                              add current results (displayed by 'list' command) to dllist
-  	dllist                              display streams to download
-  	startdl                             start download
-  	dldir [PATH]                        display or change download directory
-  
-  	# Cache management
-  	cache			 display programs in cache
-  	clearcache		 clear programs in cache
-  
-  	# Simple commands
-  	play NUMBERS	 play chosen videos
-  	record NUMBERS   download and save videos to a local file
-  	url NUMBER	   show url of video
-  	info NUMBER	  display details about given video
-  
-  	# Configuration [DEPRECATED FOR NOW]
-  	lang [fr|de|en]  display or switch to a different language
-  	quality [sd|hd]  display or switch to a different video quality
-  
-  	help			 show this help
-  	quit			 quit the cli
-  	exit			 exit the cli
+	# About channels and programs
+	channels                            get available channels list for channel
+	programs channel                    get programs list for channel
+
+	# Find streams
+	get    channel[:program][%search]   get streams provided by channel[:program] and filter content with [%search]
+	list   [STRING]	                    display last results or [STRING] cache results if [STRING] arg set
+	find   STRING                       find streams list with STRING in cache
+	getall channel                      get all streams provided by channel
+	                                    WARNING : this command will make huge number of server(s) connexions depending on channel/plugin, so it could take a long time... Please use it with parsimony !
+
+	# Stream dl commands
+	add4dl                              add current results (displayed by 'list' command) to dllist
+	dllist                              display streams to download
+	startdl                             start download
+	dldir [PATH]                        display or change download directory
+
+	# Cache management
+	cache			                    display programs cache
+	clearcache		                    clear programs cache
+
+	# Simple commands
+	play NUMBERS	                    play chosen videos
+	record NUMBERS                      download and save videos to a local file
+	url NUMBER	                        show url of video
+	info NUMBER	                        display details about given video
+
+	# Configuration
+	lang [fr|de|en]                     display or switch to a different language
+	quality [sd|hd]                     display or switch to a different video quality
+
+	help			                    show this help
+	licence			                    show licence
+	quit			                    quit the cli
+	exit			                    exit the cli
+
+**CLI non-interactive mode help**
+
+Type :
+
+    $ ./fr-replay.py --help
+
+Here is the help message :
+
+    Usage: 
+    
+    List / save replay streams with interactive or non-interactive command line interface
+    - You should first try interactive interface to get used to replay channels and programs
+    - After that, you can use non-interactive interface to plan your favorite streams record (with crontab for example).
+    
+    Interactive use :     fr-replay.py [OPTIONS]
+    Non-interactive use : fr-replay.py list|record channel[:program] [--find STRING] [OPTIONS]
+    
+    Commands:
+      list	                Display channel:[program] results
+      record                Save result stream(s) into local file(s)
+    
+    Options:
+      -h, --help            show this help message and exit
+      -d DLDIR, --dldir=DLDIR
+                            directory for downloads
+      -l LANG, --lang=LANG  language of the video fr, de, en (default: fr)
+      -q QUALITY, --quality=QUALITY
+                            quality of the video sd or hd (default: hd)
+      -f FIND, --find=FIND  filter results with string
 
 **Requirements to download streams :** wget + ffmpeg or avconv
 
