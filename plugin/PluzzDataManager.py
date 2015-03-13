@@ -100,7 +100,7 @@ class PluzzDataManager(object):
 			streams = []
 			for l in lis:
 				title = l["genre_simplifie"]+' - '+l["titre"]
-				streams.append({'title':title, 'desc':l["accroche"], 'date':l["date"], 'time':l["heure"], 'duration':l["duree"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':self.video_base_uri+l["url_video"]})
+				streams.append({'channel': 'Pluzz', 'program': program, 'title':title, 'desc':l["accroche"], 'date':l["date"], 'time':l["heure"], 'duration':l["duree"], 'www-url':PLUZZ_DOMAIN+l["OAS_sitepage"], 'url':self.video_base_uri+l["url_video"]})
 			return streams
 		except IOError:
 			print "Can't read ressource for <%s>" % program

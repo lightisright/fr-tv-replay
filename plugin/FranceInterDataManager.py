@@ -84,7 +84,7 @@ class FranceInterDataManager(object):
 			print myfeed['feed']['title']
 			for item in myfeed['entries']:
 				year, month, day, timeh, timem, times, x1, x2, x3 = item.published_parsed
-				streams.append({'title':title+' - '+item.title+' ('+item.category+')', 'desc':item.description, 'date':"%02d/%02d/%04d" % (day, month, year), 'time':'', 'duration':item.itunes_duration, 'www-url':item.link, 'url':item.guid})
+				streams.append({'channel': 'FranceInter', 'program': program, 'title':title+' - '+item.title+' ('+item.category+')', 'desc':item.description, 'date':"%02d/%02d/%04d" % (day, month, year), 'time':'', 'duration':item.itunes_duration, 'www-url':item.link, 'url':item.guid})
 			return streams
 		except urllib2.URLError:
 			print >> sys.stderr, "Can't get the arte+7 Master JSON resource"

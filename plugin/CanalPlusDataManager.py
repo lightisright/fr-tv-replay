@@ -39,7 +39,7 @@ class CanalPlusDataManager(object):
 					videos = scraper.Video.from_url(emission['url'])
 					print ':::::: %d streams found from : %s' % (len(videos), emission['name'])
 					for video in videos:
-						streams.append({'title':video['name'], 'desc':'', 'date':'', 'time':'', 'duration':'', 'www-url':emission['url'], 'url':video['url']})
+						streams.append({'channel': 'CanalPlus', 'program': program, 'title':video['name'], 'desc':'', 'date':'', 'time':'', 'duration':'', 'www-url':emission['url'], 'url':video['url']})
 			
 		return streams
 

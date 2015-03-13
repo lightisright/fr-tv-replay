@@ -477,7 +477,7 @@ def print_results(results, verbose=True):
 	title in bold with a number followed by teaser'''
 	resume = False
 	for i in range(len(results)):
-		print '%s(%d) %s'% (BOLD, i+1, results[i]['title'] + NC)
+		print '%s(%d) %s:%s > %s'% (BOLD, i+1, results[i]['channel'], results[i]['program'], results[i]['title'] + NC)
 		if verbose:
 			print '   1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
 			print '   %s' % results[i]['desc']
@@ -528,7 +528,7 @@ def record(video, dlmethod, url, options):
 	if video['date'] != '':
 		vdate = video['date']
 	dldate = time.strftime('%Y%m%d-%H%M%S',time.localtime())
-	filename = "%s_%s_%s" % (dldate, vdate, video['title'])
+	filename = "%s_%s_%s_%s_%s" % (dldate, video['channel'], video['program'], vdate, video['title'])
 	output_file = re.sub(r'\W+', '-', filename)+'.'+urlparse.urlparse(url).path.split('.')[-1]
 	log_file = output_file+'.log'
 	

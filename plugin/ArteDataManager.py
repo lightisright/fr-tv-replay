@@ -56,12 +56,12 @@ class ArteDataManager(object):
 		programs = [{'id':'plus7', 'desc':'toutes les emissions'}, {'id':'selection', 'desc':'selection'}, {'id':'mostseen', 'desc':'plus vues'}, {'id':'lastchance', 'desc':'derniere minute'}]
 		return programs
 
-	def __extract_streams__(self, lis, lang):
+	def __extract_streams__(self, lis, lang, program):
 		'''Extract list of videos title, url, and teaser from JSON ressource'''
 		streams = []
 		for l in lis:
 			#vjson_url = "http://org-www.arte.tv/papi/tvguide/videos/stream/player/"+lang+"/"+l["em"]+"_PLUS7-"+lang+"/ALL/ALL.json"
-			stream = {}
+			stream = {'channel': 'Arte', 'program': program, }
 			# first check if key ids exist
 			if l['title'] is None:
 				stream['title'] = ''
@@ -100,7 +100,7 @@ class ArteDataManager(object):
 			url = json_uri % (self.nav.options.lang)
 			obj = json.load(urllib2.urlopen(url))
 			lis = obj["videos"]
-			streams = self.__extract_streams__(lis, V_JSONLANG[self.nav.options.lang])
+			streams = self.__extract_streams__(lis, V_JSONLANG[self.nav.options.lang], program)
 			return streams
 		except urllib2.URLError:
 			print >> sys.stderr, "Can't get the arte+7 Master JSON resource"
