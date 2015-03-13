@@ -97,7 +97,7 @@ class Navigator(object):
 
 	def extra_help(self):
 		if len(self.results) == 0:
-			print >> sys.stderr, 'You need to run either a list, channels or programs command first'
+			print >> sys.stderr, 'You need to run either a %slist%s, %schannels%s or %sprograms%s command first' % (BOLD, NC, BOLD, NC, BOLD, NC)
 
 	def get_channel_content(self, channel, program):
 		'''Select channel Data Manager plugin and get Program content'''
@@ -113,7 +113,7 @@ class MyCmd(Cmd):
 	def __init__(self, options, nav=None):
 		Cmd.__init__(self)
 		self.prompt = 'fr-replay> '
-		self.intro = '\nType "help" to see available commands.'
+		self.intro = '\nType %shelp%s to display available commands.' %(BOLD, NC)
 		if nav is None:
 			self.nav = Navigator(options)
 		else:
@@ -157,15 +157,15 @@ class MyCmd(Cmd):
 				self.nav.results.append(stream)
 
 			try:
-				print ":: %d streams found, type 'list' to display results or 'find STRING' for whole cache search" % len(streams)
+				print ":: %d streams found, type %slist%s to display results or %sfind STRING%s for whole cache search" % (len(streams), BOLD, NC, BOLD, NC)
 				#print_results(streams, True)
 			except IndexError:
 				print >> sys.stderr, 'Error: unknown channel'
 			except ValueError:
 				print >> sys.stderr, 'Error: wrong argument; must be an integer'
 		else:
-			print >> sys.stderr, 'Error: Not stream found, please check your channel[:program] request (program may be mandatory depending on channel plugin)'
-			print >> sys.stderr, 'To get availables programs for requested channel, execute : programs %s' % channel
+			print >> sys.stderr, 'Error: Not stream found, please check your %schannel[:program]%s request (program may be mandatory depending on channel plugin)' % (BOLD, NC)
+			print >> sys.stderr, 'To get availables programs for requested channel, execute : %sprograms %s%s' % (BOLD, channel, NC)
 
 	def do_url(self, arg):
 		'''url NUMBER [NUMBER] ...
@@ -354,7 +354,10 @@ class MyCmd(Cmd):
 	display available programs for channel'''
 		channel = self.nav.get_plugin(arg)
 		if channel is not None:
-			channel.list_programs()
+			programs = channel.list_programs()
+			print ':: %d programs available :' % len(programs)
+			for program in programs:
+				print '.... %s (%s)' % (program['id'], program['desc'])
 
 	def do_channels(self, arg):
 		'''channels...
@@ -511,7 +514,8 @@ def record(video, dlmethod, url, options):
 	log_file = output_file+'.log'
 	
 	if dlmethod == 'WGET':
-		cmd = "wget -r --tries=10 -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
+		# wget options : continue aborted download, disploay progressbar, retry 10 times, log
+		cmd = "wget --progress=bar --tries=10 -c -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
 	elif dlmethod == 'FFMPEG':
 		recorder = find_player(RECORDERS)
 		cmd = recorder+" -i %s -c copy %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
@@ -591,7 +595,7 @@ COMMANDS
 	parser.add_option('-d', '--downloaddir', dest='dldir', type='string', default=DEFAULT_DLDIR, action='store', help='directory for downloads')
 	parser.add_option('-l', '--lang', dest='lang', type='string', default=DEFAULT_LANG, action='store', help='language of the video fr, de, en (default: fr)')
 	parser.add_option('-q', '--quality', dest='quality', type='string', default=DEFAULT_QUALITY, action='store', help='quality of the video sd or hd (default: hd)')
-	parser.add_option('-f', '--find', dest='find', default='', action='store_true', help='filter results with string')
+	parser.add_option('-f', '--find', dest='find', type='string', default='', action='store', help='filter results with string')
 
 	options, args = parser.parse_args()
 
@@ -605,7 +609,7 @@ COMMANDS
 		MyCmd(options).cmdloop()
 		sys.exit(0)
 
-	if args[0] not in ('url', 'play', 'record'):
+	if args[0] not in ('url', 'play', 'record', 'list'):
 		die('Invalid command')
 
 	if args[0] == 'url':
@@ -620,16 +624,9 @@ COMMANDS
 	if args[0] == 'record':
 		print ".. Record %s" % args[1]
 		#~ record({'url':args[1]}, options)
+		
+	sys.exit(1)
 
-	if args[0] == '--find':
-		term = ' '.join(args[1:])
-		print ':: Searching for "%s"' % term
-		#~ nav = Navigator(options)
-		#~ nav.search(term)
-		#~ nav.last_cmd = 'search %s' % term
-		#~ if nav.results is not None:
-			#~ print_results(nav.results)
-			#~ MyCmd(options, nav=nav).cmdloop()
 
 if __name__ == '__main__':
 	try:

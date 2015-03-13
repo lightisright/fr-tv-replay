@@ -15,13 +15,11 @@ class CanalPlusDataManager(object):
 
 	def list_programs(self):
 		emission_types = scraper.Emission.get_emission_types()
-		print ':: %d programs available :' % len(emission_types)
+		programs = []
 		for emission_type in emission_types:
 			emissions = scraper.Emission.get_emissions_from_index(emission_type['index'])
-			print '.... %s : %d emissions' % (emission_type['name'], len(emissions))
-			for emission in emissions:
-				videos = scraper.Video.from_url(emission['url'])
-				print ':::::: %s : %d streams' % (emission['name'], len(videos))
+			programs.append({ 'id': emission_type['name'], 'desc': '%d emissions' % len(emissions) })
+		return programs
 
 	def retrieve_streams(self, program):
 		'''Get requested program streams index'''

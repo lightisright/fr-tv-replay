@@ -52,10 +52,11 @@ class FranceInterDataManager(object):
 	def list_programs(self):
 		'''List available programs'''
 		self.__dl__()
-		print ':: %d programs available :' % len(self.programs)
+		result = []
 		for program in self.programs:
-			print '.. %s (%s)' % (program['title'], program['id'])
-
+			result.append({'id':program['id'],'desc':program['title']})
+		return result
+		
 	def retrieve_streams(self, program):
 		'''Get requested program streams index'''
 		
@@ -86,7 +87,7 @@ class FranceInterDataManager(object):
 				streams.append({'title':title+' - '+item.title+' ('+item.category+')', 'desc':item.description, 'date':"%02d/%02d/%04d" % (day, month, year), 'time':'', 'duration':item.itunes_duration, 'www-url':item.link, 'url':item.guid})
 			return streams
 		except urllib2.URLError:
-			die("Can't get the arte+7 Master JSON resource")
+			print >> sys.stderr, "Can't get the arte+7 Master JSON resource"
 			
 		return None
 

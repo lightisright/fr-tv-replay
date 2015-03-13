@@ -46,10 +46,8 @@ class ArteDataManager(object):
 		self.DL_METHOD = 'WGET'
 
 	def list_programs(self):
-		programs = ['plus7', 'selection', 'mostseen', 'lastchance']
-		print ':: %d programs available :' % len(programs)
-		for program in programs:
-			print '.... %s' % program
+		programs = [{'id':'plus7', 'desc':'toutes les emissions'}, {'id':'selection', 'desc':'selection'}, {'id':'mostseen', 'desc':'plus vues'}, {'id':'lastchance', 'desc':'derniere minute'}]
+		return programs
 
 	def __extract_streams__(self, lis, lang):
 		'''Extract list of videos title, url, and teaser from JSON ressource'''
@@ -98,7 +96,7 @@ class ArteDataManager(object):
 			streams = self.__extract_streams__(lis, V_JSONLANG[self.nav.options.lang])
 			return streams
 		except urllib2.URLError:
-			die("Can't get the arte+7 Master JSON resource")
+			print >> sys.stderr, "Can't get the arte+7 Master JSON resource"
 			
 		return None
 
@@ -119,7 +117,8 @@ class ArteDataManager(object):
 				stream_url.append(details['url'])
 				stream_format.append(details['quality']+' * '+str(details['width'])+'x'+str(details['height'])+' * '+details['videoFormat']+' * '+details['versionCode']);
 		except urllib2.URLError:
-			die("Can't get resource : "+video["url"])
+			print >> sys.stderr, "Can't get resource : "+video["url"]
+			return False
 		
 		# Try to find requested video format by priority
 		k = 0

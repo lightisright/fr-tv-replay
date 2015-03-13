@@ -58,9 +58,9 @@ class PluzzDataManager(object):
 						os.makedirs(PLUZZ_CACHE_DIR+'/'+dirname)
 					zfile.extract(name, PLUZZ_CACHE_DIR+'/'+dirname)
 			except OSError.URLError:
-				die("Can't get the Pluzz master ressource : wrong URL")
+				 print >> sys.stderr, "Can't get the Pluzz master ressource : wrong URL"
 			except OSError.HTTPError:
-				die("Can't get the Pluzz master ressource : HTTP error")
+				print >> sys.stderr, "Can't get the Pluzz master ressource : HTTP error"
 				
 		# Save video server URI locally
 		
@@ -74,10 +74,11 @@ class PluzzDataManager(object):
 		
 	def list_programs(self):
 		'''List available programs'''
-		print ':: %d programs available :' % len(PLUZZ_PROGRAMS)
 		self.__dl__()
+		result = []
 		for program in PLUZZ_PROGRAMS:
-			print '.... %s' % program
+			result.append({ 'id':program, 'desc':''})
+		return result
 
 	def retrieve_streams(self, program):
 		'''Get requested program streams index'''
