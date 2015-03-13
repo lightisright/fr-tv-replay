@@ -375,6 +375,17 @@ class MyCmd(Cmd):
 		del self.nav.results[:]
 		self.do_add(arg)
 
+	def do_getall(self, arg):
+		'''getall channel...
+	get all programs for channel'''
+		channel = self.nav.get_plugin(arg)
+		if channel is not None:
+			programs = channel.list_programs()
+			print ':: %d programs available :' % len(programs)
+			for program in programs:
+				print '.... %s (%s)' % (program['id'], program['desc'])
+				self.do_add(arg+':'+program['id'])
+
 	def do_dldir(self,arg):
 		'''dldir [PATH] ...
 	display or change download directory'''
@@ -396,9 +407,11 @@ class MyCmd(Cmd):
 	programs channel                    get programs list for channel
 
 	# Find streams
-	get    channel[:program][%search]   get videos provided by channel[:program] and filter content with [%search]
+	get    channel[:program][%search]   get streams provided by channel[:program] and filter content with [%search]
 	list   [STRING]	                    display last results or [STRING] cache results if [STRING] arg set
-	find   STRING                       find videos list with STRING in cache
+	find   STRING                       find streams list with STRING in cache
+	getall channel                      get all streams provided by channel
+	                                    WARNING : this command will make huge number of server(s) connexions depending on channel/plugin, so it could take a long time... Please use it with parsimony !
 
 	# Stream dl commands
 	add4dl                              add current results (displayed by 'list' command) to dllist
@@ -585,7 +598,7 @@ List / save replay streams with interactive or non-interactive command line inte
 - After that, you can use non-interactive interface to plan your favorite streams record (with crontab for example).
 
   Interactive use :     %prog [OPTIONS]
-  Non-interactive use : %prog list|record channel:[program] [--find STRING] [OPTIONS]
+  Non-interactive use : %prog list|record channel[:program] [--find STRING] [OPTIONS]
 
 Commands:
   list	                Display channel:[program] results
