@@ -120,7 +120,7 @@ class MyCmd(Cmd):
 			self.nav = nav
 
 	def do_add(self, arg):
-		'''add channel[:program] to results ...
+		'''add channel[:program][%search] to results ...
 	display available videos or search for given videos(s)'''
 		channel = ''
 		program = ''
@@ -235,12 +235,12 @@ class MyCmd(Cmd):
 			print ":: display last results"
 			print_results(self.nav.results)
 
-	def do_add4dl(self, arg):
+	def do_add4dl(self):
 		'''add4dl
 		add last search results to download list'''
 		print ":: add last search results to download list"
 		self.nav.dllist = list(self.nav.results)
-		self.do_dllist(arg)
+		self.do_dllist()
 
 	def do_info(self, arg):
 		'''info NUMBER
@@ -295,13 +295,13 @@ class MyCmd(Cmd):
 			channel = self.nav.get_plugin(v['channel'])
 			record(v, channel.DL_METHOD, channel.get_stream_uri(v), self.nav.options)
 
-	def do_dllist(self, arg):
+	def do_dllist(self):
 		'''dllist
 	displays ready for download streams'''
 		print "\n:: following items are ready for download, type 'startdl' to start download..."
 		print_results(self.nav.dllist)
 
-	def do_startdl(self, arg):
+	def do_startdl(self):
 		'''startdl
 	download the chosen videos to a local file'''
 		for v in self.nav.dllist:
@@ -407,22 +407,22 @@ class MyCmd(Cmd):
 	dldir [PATH]                        display or change download directory
 
 	# Cache management
-	cache			 display programs in cache
-	clearcache		 clear programs in cache
+	cache			                    display programs cache
+	clearcache		                    clear programs cache
 
 	# Simple commands
-	play NUMBERS	 play chosen videos
-	record NUMBERS   download and save videos to a local file
-	url NUMBER	   show url of video
-	info NUMBER	  display details about given video
+	play NUMBERS	                    play chosen videos
+	record NUMBERS                      download and save videos to a local file
+	url NUMBER	                        show url of video
+	info NUMBER	                        display details about given video
 
 	# Configuration
-	lang [fr|de|en]  display or switch to a different language
-	quality [sd|hd]  display or switch to a different video quality
+	lang [fr|de|en]                     display or switch to a different language
+	quality [sd|hd]                     display or switch to a different video quality
 
-	help			 show this help
-	quit			 quit the cli
-	exit			 exit the cli'''
+	help			                    show this help
+	quit			                    quit the cli
+	exit			                    exit the cli'''
 		else:
 			try:
 				print getattr(self, 'do_'+arg).__doc__
@@ -509,8 +509,14 @@ def play(video, options):
 def record(video, dlmethod, url, options):
 	cwd = os.getcwd()
 	os.chdir(options.dldir)
-	#~ vurl = make_cmd_args(video, options)
-	output_file = time.strftime('%y%m%d-%H%M%S',time.localtime())+'_'+video['title'].replace('/', '_')+'__'+urlparse.urlparse(url).path.split('/')[-1]
+	
+	# create dl filename
+	vdate = ''
+	if video['date'] != '':
+		vdate = video['date']
+	dldate = time.strftime('%Y%m%d-%H%M%S',time.localtime())
+	filename = "%s_%s_%s" % (dldate, vdate, video['title'])
+	output_file = re.sub(r'\W+', '-', filename)+'.'+urlparse.urlparse(url).path.split('.')[-1]
 	log_file = output_file+'.log'
 	
 	if dlmethod == 'WGET':
@@ -598,7 +604,7 @@ COMMANDS
 	parser.add_option('-f', '--find', dest='find', type='string', default='', action='store', help='filter results with string')
 
 	options, args = parser.parse_args()
-
+	
 	if not os.path.exists(options.dldir):
 		die('Invalid Path')
 	if options.lang not in ('fr', 'de', 'en'):
@@ -609,21 +615,23 @@ COMMANDS
 		MyCmd(options).cmdloop()
 		sys.exit(0)
 
-	if args[0] not in ('url', 'play', 'record', 'list'):
+	# Check command
+	if args[0] not in ('record', 'list'):
 		die('Invalid command')
 
-	if args[0] == 'url':
-		print ".. Url %s" % args[1]
-		#~ print get_rtmp_url(args[1], quality=options.quality, lang=options.lang)[0]
-
-	if args[0] == 'play':
-		print ".. Play %s" % args[1]
-		#~ play({'url':args[1]}, options)
-		#~ sys.exit(1)
+	# 2nd arg is channel[:program] id (mandatory)
+	cmd = MyCmd(options)
+	cmd.do_get(args[1])
+	
+	# Diplay results
+	if options.find != '':
+		cmd.do_find(options.find)
+	elif args[0] == 'list':
+		cmd.do_list(args[1])
 
 	if args[0] == 'record':
-		print ".. Record %s" % args[1]
-		#~ record({'url':args[1]}, options)
+		cmd.do_add4dl()
+		cmd.do_startdl()
 		
 	sys.exit(1)
 
