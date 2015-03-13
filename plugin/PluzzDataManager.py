@@ -1,3 +1,18 @@
+# Copyright (C) 2015  http://www.github.com/lightisright
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # PLUZZ: http://webservices.francetelevisions.fr/catchup/flux/flux_main.zip
 #		 cf. https://gitorious.org/grilo/grilo-lua-sources/commit/f9f0c7d7d40561a49ba56a35c2748fd02759fd81
 #		 cf. https://github.com/mikebzh44/France-TV-Pluzz-for-XBMC/blob/master/plugin.video.FranceTVPluzz/default.py

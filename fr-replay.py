@@ -1,5 +1,20 @@
 #!/usr/bin/python2
 
+# Copyright (C) 2015  http://www.github.com/lightisright
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 ########################################################################
 #						   PLAYERS									#
 ########################################################################
@@ -63,6 +78,10 @@ HIST_CMD = ('channels', 'programs', 'get', 'add')
 BOLD   = '[1m'
 NC	 = '[0m'	# no color
 
+# global vars for results printing
+resume=False
+verbose=True
+
 class Navigator(object):
 	def __init__(self, options):
 		self.options = options
@@ -113,7 +132,8 @@ class MyCmd(Cmd):
 	def __init__(self, options, nav=None):
 		Cmd.__init__(self)
 		self.prompt = 'fr-replay> '
-		self.intro = '\nType %shelp%s to display available commands.' %(BOLD, NC)
+		self.intro = '\nCopyright (C) 2015 http://www.github.com/lightisright\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it under certain conditions.\nType %slicence%s for more informations.' % (BOLD, NC)
+		self.intro = self.intro+'\n\nType %shelp%s to display available commands.' %(BOLD, NC)
 		if nav is None:
 			self.nav = Navigator(options)
 		else:
@@ -434,6 +454,7 @@ class MyCmd(Cmd):
 	quality [sd|hd]                     display or switch to a different video quality
 
 	help			                    show this help
+	licence			                    show licence
 	quit			                    quit the cli
 	exit			                    exit the cli'''
 		else:
@@ -461,6 +482,24 @@ class MyCmd(Cmd):
 	def emptyline(self):
 		pass
 
+	def do_licence(self, arg):
+		print '''
+# Copyright (C) 2015  http://www.github.com/lightisright
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 def die(msg):
 	print >> sys.stderr, 'Error: %s. See %s --help' % (msg, sys.argv[0])
 	sys.exit(1)
@@ -472,10 +511,11 @@ def search(results, searchstr):
 			found.append(results[i])
 	return found
 
-def print_results(results, verbose=True):
+def print_results(results):
 	'''print list of video:
 	title in bold with a number followed by teaser'''
-	resume = False
+	global resume
+	global verbose
 	for i in range(len(results)):
 		print '%s(%d) %s:%s > %s'% (BOLD, i+1, results[i]['channel'], results[i]['program'], results[i]['title'] + NC)
 		if verbose:
@@ -503,6 +543,8 @@ def print_results(results, verbose=True):
 	#~ print ':: Display page %d' % page
 	if len(results) == 0:
 		print ':: the search returned nothing'
+		
+	resume = False
 
 def play(video, options):
 	#~ vurl = make_cmd_args(video, options, streaming=True)
@@ -625,6 +667,12 @@ Commands:
 	# Check command
 	if args[0] not in ('record', 'list'):
 		die('Invalid command')
+
+	# set global vars for result display
+	global resume
+	resume = True
+	global verbose
+	verbose = False
 
 	# 2nd arg is channel[:program] id (mandatory)
 	cmd = MyCmd(options)
