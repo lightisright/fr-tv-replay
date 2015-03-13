@@ -1,12 +1,13 @@
 fr-tv-replay
 =============
 
-Search &amp; play several French Television Replay streams (Pluzz, Arte, Canal+) - Python / CLI
+Search &amp; play several French TV Replay streams & Radio podcasts (Pluzz, Arte, Canal+, France Inter) - Python / CLI
 
 This application will list & play streams available on several French TV channels :
  * Pluzz
  * Arte
  * Canal+
+ * France Inter
 
 **Status :** [Functionnal](README.md#first-use) but debug in progress, no release for now..... (*Tests in progress on Ubuntu 14.04*)
 
@@ -14,7 +15,7 @@ This application will list & play streams available on several French TV channel
 
 **Warning for all users**
 
- * All streams are **copyrighted by France Televisions, ARTE and Canal+**. 
+ * All streams are **copyrighted by France Televisions, ARTE, Canal+ & France Inter**. 
  * You are **NOT** free to *share*, *sell* or *modify* those videos !
 
 ----
@@ -23,9 +24,9 @@ This application will list & play streams available on several French TV channel
 
 This command-line software was written in Python as an alternative solution to avoid use of Flash Player which is not optimized for Linux-based OS. This may also help you if like me your internet connexion bandwith is too small to watch HD live streams.
 
-This is my first app with Python, so please be clement... 
+It is also more efficient for me to search & play my favorite streams from a single software like i do with a Syndication (RSS/Atom) feed aggregator for news, without having to surf on several websites....
 
-It was originally based on *[arteVIDEOS](https://github.com/solsticedhiver/arteVIDEOS)* project, i made some tests & updates on it to make it work again then i made some adaptations for other channels.
+This is my first app with Python, so please be clement... It was originally based on *[arteVIDEOS](https://github.com/solsticedhiver/arteVIDEOS)* project, i made some tests & updates on it to make it work again then i made some adaptations for other channels.
 
 ----
 
