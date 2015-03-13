@@ -578,27 +578,21 @@ def find_player(players):
 	return None
 
 def main():
-	usage = '''Usage: %prog play|record channel[:program] [--find STRING] [OPTIONS] URL
-	   %prog search [OPTIONS] STRING...
-	   %prog
+	usage = '''
 
-Play or record videos from arte VIDEOS website without a mandatory browser.
+List / save replay streams with interactive or non-interactive command line interface
+- You should first try interactive interface to get used to replay channels and programs
+- After that, you can use non-interactive interface to plan your favorite streams record (with crontab for example).
 
-In the first form, you need the url of the video page
-In the second form, just enter your search term
-In the last form (without any argument), you enter an interactive interpreter
-(type help to get a list of available commands, once in the interpreter)
+  Interactive use :     %prog [OPTIONS]
+  Non-interactive use : %prog list|record channel:[program] [--find STRING] [OPTIONS]
 
-COMMANDS
-	url	 show the url of the video
-	play	play the video directly
-	record  save the video into a local file
-	search  search for a video on arte+7
-			It will display a numbered list of results and enter
-			a simple command line interpreter'''
+Commands:
+  list	                Display channel:[program] results
+  record                Save result stream(s) into local file(s)'''
 
 	parser = OptionParser(usage=usage)
-	parser.add_option('-d', '--downloaddir', dest='dldir', type='string', default=DEFAULT_DLDIR, action='store', help='directory for downloads')
+	parser.add_option('-d', '--dldir', dest='dldir', type='string', default=DEFAULT_DLDIR, action='store', help='directory for downloads')
 	parser.add_option('-l', '--lang', dest='lang', type='string', default=DEFAULT_LANG, action='store', help='language of the video fr, de, en (default: fr)')
 	parser.add_option('-q', '--quality', dest='quality', type='string', default=DEFAULT_QUALITY, action='store', help='quality of the video sd or hd (default: hd)')
 	parser.add_option('-f', '--find', dest='find', type='string', default='', action='store', help='filter results with string')
