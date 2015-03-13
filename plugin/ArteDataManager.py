@@ -1,3 +1,10 @@
+# ==================================================
+# TODO-LIST
+# ==================================================
+# Care about "quality" option for DL_PRIORITY order
+# Care about "lang" option for DL_PRIORITY order
+# ==================================================
+
 # JSON ressources found thanks to ArteFetcher software sources
 # http://sourceforge.net/projects/artefetcher/
 V_ALL="http://www.arte.tv/guide/%s/plus7.json"
