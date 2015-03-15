@@ -255,12 +255,12 @@ class MyCmd(Cmd):
 			print ":: display last results"
 			print_results(self.nav.results)
 
-	def do_add4dl(self):
+	def do_add4dl(self, arg):
 		'''add4dl
 		add last search results to download list'''
 		print ":: add last search results to download list"
 		self.nav.dllist = list(self.nav.results)
-		self.do_dllist()
+		self.do_dllist(None)
 
 	def do_info(self, arg):
 		'''info NUMBER
@@ -315,13 +315,13 @@ class MyCmd(Cmd):
 			channel = self.nav.get_plugin(v['channel'])
 			record(v, channel.DL_METHOD, channel.get_stream_uri(v), self.nav.options)
 
-	def do_dllist(self):
+	def do_dllist(self, arg):
 		'''dllist
 	displays ready for download streams'''
 		print "\n:: following items are ready for download, type 'startdl' to start download..."
 		print_results(self.nav.dllist)
 
-	def do_startdl(self):
+	def do_startdl(self, arg):
 		'''startdl
 	download the chosen videos to a local file'''
 		for v in self.nav.dllist:
@@ -685,8 +685,8 @@ Commands:
 		cmd.do_list(args[1])
 
 	if args[0] == 'record':
-		cmd.do_add4dl()
-		cmd.do_startdl()
+		cmd.do_add4dl(None)
+		cmd.do_startdl(None)
 		
 	sys.exit(1)
 
