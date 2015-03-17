@@ -80,7 +80,7 @@ NC	 = '[0m'	# no color
 
 # global vars for results printing
 resume=False
-verbose=True
+verbose=False
 
 class Navigator(object):
 	def __init__(self, options):
@@ -195,7 +195,8 @@ class MyCmd(Cmd):
 		for i in arg.split():
 			try:
 				video = self.nav.results[int(i)-1]
-				print video['title']+" : "+video['url']
+				channel = self.nav.get_plugin(video['channel'])
+				print channel.get_stream_uri(video)
 			except ValueError:
 				print >> sys.stderr, '"%s": wrong argument, must be an integer' % i
 				return
@@ -266,11 +267,10 @@ class MyCmd(Cmd):
 		'''info NUMBER
 		display details about chosen video'''
 		try:
-			video = self.nav[arg]
-			if 'info' not in video:
-				get_video_player_info(video, self.nav.options)
+			video = self.nav.results[int(arg)-1]
 			print '%s== %s ==%s' % (BOLD, video['title'], NC)
-			print '%s== %s ==%s' % (HIGH, video['info'], NC)
+			print '%s' % video['desc']
+			print ':: 1st diffusion : %s - duration : %s\n' % (video['date'], video['duration'])
 		except ValueError:
 			print >> sys.stderr, 'Error: wrong argument (must be an integer)'
 		except IndexError:
@@ -349,6 +349,18 @@ class MyCmd(Cmd):
 			self.nav.clear_info()
 		else:
 			print >> sys.stderr, 'Error: lang could be %s' % ','.join(LANG)
+
+	def do_verbose(self, arg):
+		global verbose
+		if arg == 'on':
+			verbose = True
+		elif arg == 'off':
+			verbose = False
+		else:
+			if verbose == True:
+				print "on"
+			else:
+				print "off"
 
 	def complete_quality(self, text, line, begidx, endidx):
 		if text == '':
@@ -450,6 +462,7 @@ class MyCmd(Cmd):
 	info NUMBER	                        display details about given video
 
 	# Configuration
+	verbose [on|off]                    display or switch verbosity (default off)
 	lang [fr|de|en]                     display or switch to a different language
 	quality [sd|hd]                     display or switch to a different video quality
 
@@ -517,10 +530,9 @@ def print_results(results):
 	global resume
 	global verbose
 	for i in range(len(results)):
-		print '%s(%d) %s:%s > %s'% (BOLD, i+1, results[i]['channel'], results[i]['program'], results[i]['title'] + NC)
+		print '%s(%d)\t%s:%s > %s [%s, duration: %s]'% (BOLD, i+1, results[i]['channel'], results[i]['program'], results[i]['title'] + NC, results[i]['date']+' '+results[i]['time'], results[i]['duration'])
 		if verbose:
-			print '   1st diffusion : '+ results[i]['date'] + ' ' + results[i]['time'] + ', duration : ' + results[i]['duration']
-			print '   %s' % results[i]['desc']
+			print '\t%s' % results[i]['desc']
 		# wait user action to display items or resume
 		if not(resume) and (i+1) % VIDEO_PER_PAGE == 0:
 			print 
@@ -646,8 +658,11 @@ Commands:
   list	                Display channel:[program] results
   record                Save result stream(s) into local file(s)'''
 
+	global verbose
+	
 	parser = OptionParser(usage=usage)
 	parser.add_option('-d', '--dldir', dest='dldir', type='string', default=DEFAULT_DLDIR, action='store', help='directory for downloads')
+	parser.add_option('-v', '--verbose', dest='verbose', type='string', default='off', action='store', help='output verbosity (default: off)')
 	parser.add_option('-l', '--lang', dest='lang', type='string', default=DEFAULT_LANG, action='store', help='language of the video fr, de, en (default: fr)')
 	parser.add_option('-q', '--quality', dest='quality', type='string', default=DEFAULT_QUALITY, action='store', help='quality of the video sd or hd (default: hd)')
 	parser.add_option('-f', '--find', dest='find', type='string', default='', action='store', help='filter results with string')
@@ -660,6 +675,8 @@ Commands:
 		die('Invalid option')
 	if options.quality not in ('sd', 'hd'):
 		die('Invalid option')
+	if options.verbose not in ('on', 'off'):
+		die('Invalid option')
 	if len(args) < 2:
 		MyCmd(options).cmdloop()
 		sys.exit(0)
@@ -671,8 +688,6 @@ Commands:
 	# set global vars for result display
 	global resume
 	resume = True
-	global verbose
-	verbose = False
 
 	# 2nd arg is channel[:program] id (mandatory)
 	cmd = MyCmd(options)
