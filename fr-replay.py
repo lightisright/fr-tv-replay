@@ -362,6 +362,18 @@ class MyCmd(Cmd):
 			else:
 				print "off"
 
+	def do_resume(self, arg):
+		global resume
+		if arg == 'on':
+			resume = True
+		elif arg == 'off':
+			resume = False
+		else:
+			if resume == True:
+				print "on"
+			else:
+				print "off"
+
 	def complete_quality(self, text, line, begidx, endidx):
 		if text == '':
 			return QUALITY
@@ -463,6 +475,7 @@ class MyCmd(Cmd):
 
 	# Configuration
 	verbose [on|off]                    display or switch verbosity (default off)
+	resume [on|off]                     resume results (default off)
 	lang [fr|de|en]                     display or switch to a different language
 	quality [sd|hd]                     display or switch to a different video quality
 
@@ -658,6 +671,7 @@ Commands:
   list	                Display channel:[program] results
   record                Save result stream(s) into local file(s)'''
 
+	# set global vars for result display
 	global verbose
 	
 	parser = OptionParser(usage=usage)
@@ -681,13 +695,12 @@ Commands:
 		MyCmd(options).cmdloop()
 		sys.exit(0)
 
+	global resume
+	resume = True
+
 	# Check command
 	if args[0] not in ('record', 'list'):
 		die('Invalid command')
-
-	# set global vars for result display
-	global resume
-	resume = True
 
 	# 2nd arg is channel[:program] id (mandatory)
 	cmd = MyCmd(options)
