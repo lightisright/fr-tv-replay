@@ -411,6 +411,7 @@ class MyCmd(Cmd):
 		print '.. CanalPlus'
 		print '.. Arte'
 		print '.. Pluzz'
+		print '.. Gulli'
 		print '.. FranceInter'
 
 	def do_get(self, arg):

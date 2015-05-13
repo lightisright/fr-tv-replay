@@ -59,7 +59,7 @@ DL_PRIORITY = (
 				)
 
 import urllib2
-import json
+import json, sys
 
 class ArteDataManager(object):
 	
