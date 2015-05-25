@@ -29,9 +29,12 @@ PLAYERS = (
 
 RECORDERS = (
 		'ffmpeg',
-		'avconv'
+		'avconv'          # libav-tools debian package
 		)
 
+# User-agent to use for downloads for restrictive websites
+#USERAGENT = "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:34.0) Gecko/20100101 Firefox/34.0"
+USERAGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
 
 ########################################################################
 # DO NOT MODIFY below this line unless you know what you are doing	 #
@@ -96,6 +99,9 @@ class Navigator(object):
 		# cache catalogs results
 		self.catalog = {}
 		self.searchs = {}
+		
+		# User-agent to use for downloads for restrictive websites
+		self.useragent = USERAGENT
 
 	def __getitem__(self, key):
 		indx = int(key)-1
@@ -412,6 +418,7 @@ class MyCmd(Cmd):
 		print '.. Arte'
 		print '.. Pluzz'
 		print '.. Gulli'
+		print '.. Tf1'
 		print '.. FranceInter'
 
 	def do_get(self, arg):
@@ -591,6 +598,10 @@ def record(video, dlmethod, url, options):
 	cwd = os.getcwd()
 	os.chdir(options.dldir)
 	
+	if video is False or url is None:
+		print >> sys.stderr, 'Command failed.'
+		return
+		
 	# create dl filename
 	vdate = ''
 	if video['date'] != '':
@@ -602,10 +613,10 @@ def record(video, dlmethod, url, options):
 	
 	if dlmethod == 'WGET':
 		# wget options : continue aborted download, disploay progressbar, retry 10 times, log
-		cmd = "wget --progress=bar --tries=10 -c -O %s -o %s %s" % (output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
+		cmd = "wget   -U   %s   --progress=bar   --tries=10   -c   -O   %s   -o   %s   %s" % (USERAGENT, output_file.replace(' ', '_'), log_file.replace(' ', '_'), url.replace(' ','%20'))
 	elif dlmethod == 'FFMPEG':
 		recorder = find_player(RECORDERS)
-		cmd = recorder+" -i %s -c copy %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
+		cmd = recorder+"   -i   %s   -c   copy   %s%s" % (url.replace(' ','%20'), output_file.replace(' ', '_'), ".mkv")
 	else:
 		print >> sys.stderr, 'Error: record method <%s> not supported. Record aborted.' % dlmethod
 		return
@@ -617,7 +628,7 @@ def record(video, dlmethod, url, options):
 	print cmd
 	is_file_present = os.path.isfile(output_file)
 	try:
-		subprocess.check_call(cmd.split(' '))
+		subprocess.check_call(cmd.split('   '))
 		if os.path.isfile(log_file):
 			os.unlink(log_file)
 		print ':: Download complete'
